@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat App</title>
+    <link rel="stylesheet" href="/css/styles.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f9;
+        }
+
+        .chat-container {
+            display: flex;
+            flex-direction: column;
+            max-width: 600px;
+            margin: 50px auto;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .chat-header {
+            background-color: #4CAF50;
+            color: #ffffff;
+            padding: 15px;
+            text-align: center;
+            font-size: 1.5rem;
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 15px;
+            overflow-y: auto;
+            height: 400px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chat-message {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 5px;
+            max-width: 70%;
+        }
+
+        .chat-message.user {
+            background-color: #e1ffc7;
+            align-self: flex-end;
+            text-align: right;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            border: 1px solid #d4f8b7;
+            position: relative;
+        }
+
+        .chat-message.user::after {
+            content: '';
+            position: absolute;
+            bottom: 10px;
+            right: -10px;
+            width: 0;
+            height: 0;
+            border-style: solid;
+            border-width: 10px 0 10px 10px;
+            border-color: transparent transparent transparent #e1ffc7;
+        }
+
+        .chat-message.friend {
+            background-color: #f1f1f1;
+            align-self: flex-start;
+            text-align: left;
+        }
+
+        .chat-name {
+            font-weight: bold;
+            margin-bottom: 5px;
+            font-size: 0.9rem;
+            color: #555;
+        }
+
+        .chat-input-container {
+            display: flex;
+            border-top: 1px solid #ddd;
+        }
+
+        .chat-input {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            outline: none;
+            font-size: 1rem;
+        }
+
+        .send-button {
+            background-color: #4CAF50;
+            color: #ffffff;
+            border: none;
+            padding: 10px 15px;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+
+        .send-button:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+<div class="chat-container">
+    <div class="chat-header">
+        Chat App
+    </div>
+
+    <div class="chat-messages">
+        <div class="chat-message user" th:each="message : ${userMessages}">
+            <div class="chat-name" th:text="${userName}"></div>
+            <div th:text="${message}"></div>
+        </div>
+        <div class="chat-message friend" th:each="message : ${friendMessages}">
+            <div class="chat-name" th:text="${friendName}"></div>
+            <div th:text="${message}"></div>
+        </div>
+    </div>
+
+    <div class="chat-input-container">
+        <input type="text" class="chat-input" placeholder="Type a message..." th:value="${newMessage}" />
+        <button class="send-button" type="submit">Send</button>
+    </div>
+</div>
+</body>
+</html>
