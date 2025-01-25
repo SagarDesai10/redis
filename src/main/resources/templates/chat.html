@@ -108,6 +108,46 @@
             background-color: #45a049;
         }
     </style>
+	<script>
+		
+		function sendMessage() {
+		    // Get the value of the input field
+		    let msg = document.getElementById("chat-input").value;
+
+		    // Check if the input is not empty
+		    if (msg.trim() === "") {
+		        console.error("Message is empty");
+		        return;
+		    }
+
+		    let xhr = new XMLHttpRequest();
+
+		    // Properly encode the message
+		    let url = 'http://localhost:8080/app/v1/chatapp/send-msg?message=' + encodeURIComponent(msg);
+
+		    xhr.open("GET", url, true);
+
+		    xhr.onreadystatechange = function () {
+		        if (this.readyState == 4) {
+		            if (this.status == 200) {
+		                console.log(this.responseText);
+		                // Optionally clear the input field after sending
+		                document.getElementById("chat-input").value = "";
+		            } else {
+		                console.error("Error: " + this.status + " - " + this.statusText);
+		            }
+		        }
+		    };
+
+		    xhr.onerror = function () {
+		        console.error("Request failed");
+		    };
+
+		    xhr.send();
+		}
+
+		
+	</script>
 </head>
 <body>
 <div class="chat-container">
@@ -126,9 +166,9 @@
         </div>
     </div>
 
-    <div class="chat-input-container">
-        <input type="text" class="chat-input" placeholder="Type a message..." th:value="${newMessage}" />
-        <button class="send-button" type="submit">Send</button>
+	<div class="chat-input-container">
+	    <input type="text" id="chat-input" class="chat-input" placeholder="Type a message..." />
+	    <button class="send-button" type="button" onclick="sendMessage()">Send</button>
     </div>
 </div>
 </body>
