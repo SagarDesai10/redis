@@ -6,18 +6,24 @@
     <title>Chat App</title>
     <link rel="stylesheet" href="/css/styles.css">
     <style>
+        /* CSS for the chat container and messages */
         body {
             font-family: Arial, sans-serif;
             margin: 0;
             padding: 0;
             background-color: #f4f4f9;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
 
         .chat-container {
             display: flex;
             flex-direction: column;
             max-width: 600px;
-            margin: 50px auto;
+            height: 90vh;
+            width: 100%;
             background-color: #ffffff;
             border-radius: 8px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
@@ -36,43 +42,31 @@
             flex: 1;
             padding: 15px;
             overflow-y: auto;
-            height: 400px;
             display: flex;
             flex-direction: column;
+            gap: 10px;
         }
 
         .chat-message {
-            margin: 10px 0;
             padding: 10px;
             border-radius: 5px;
             max-width: 70%;
+            word-wrap: break-word;
+            font-size: 1rem;
+            line-height: 1.5;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
 
         .chat-message.user {
-            background-color: #e1ffc7;
             align-self: flex-end;
             text-align: right;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             border: 1px solid #d4f8b7;
-            position: relative;
-        }
-
-        .chat-message.user::after {
-            content: '';
-            position: absolute;
-            bottom: 10px;
-            right: -10px;
-            width: 0;
-            height: 0;
-            border-style: solid;
-            border-width: 10px 0 10px 10px;
-            border-color: transparent transparent transparent #e1ffc7;
         }
 
         .chat-message.friend {
-            background-color: #f1f1f1;
             align-self: flex-start;
             text-align: left;
+            border: 1px solid #ddd;
         }
 
         .chat-name {
@@ -85,6 +79,8 @@
         .chat-input-container {
             display: flex;
             border-top: 1px solid #ddd;
+            padding: 10px;
+            background-color: #f9f9f9;
         }
 
         .chat-input {
@@ -93,6 +89,7 @@
             border: none;
             outline: none;
             font-size: 1rem;
+            border-radius: 4px;
         }
 
         .send-button {
@@ -102,52 +99,92 @@
             padding: 10px 15px;
             cursor: pointer;
             font-size: 1rem;
+            margin-left: 10px;
+            border-radius: 4px;
         }
 
         .send-button:hover {
             background-color: #45a049;
         }
     </style>
-	<script>
-		
-		function sendMessage() {
-		    // Get the value of the input field
-		    let msg = document.getElementById("chat-input").value;
+    <script>
+        // Function to generate consistent colors based on the name
+        function generateColor(name) {
+            let hash = 0;
+            for (let i = 0; i < name.length; i++) {
+                hash = name.charCodeAt(i) + ((hash << 5) - hash);
+            }
+            const color = `hsl(${hash % 360}, 70%, 80%)`;
+            return color;
+        }
 
-		    // Check if the input is not empty
-		    if (msg.trim() === "") {
-		        console.error("Message is empty");
-		        return;
-		    }
+        // Function to render chat messages dynamically
+        function renderMessages(messages) {
+            const chatMessages = document.querySelector(".chat-messages");
+            chatMessages.innerHTML = ""; // Clear existing messages
 
-		    let xhr = new XMLHttpRequest();
+            messages.forEach(message => {
+                const messageDiv = document.createElement("div");
+                messageDiv.classList.add("chat-message", message.type);
 
-		    // Properly encode the message
-		    let url = 'http://localhost:8080/app/v1/chatapp/send-msg?message=' + encodeURIComponent(msg);
+                const nameDiv = document.createElement("div");
+                nameDiv.classList.add("chat-name");
+                nameDiv.textContent = message.name;
 
-		    xhr.open("GET", url, true);
+                const textDiv = document.createElement("div");
+                textDiv.textContent = message.text;
 
-		    xhr.onreadystatechange = function () {
-		        if (this.readyState == 4) {
-		            if (this.status == 200) {
-		                console.log(this.responseText);
-		                // Optionally clear the input field after sending
-		                document.getElementById("chat-input").value = "";
-		            } else {
-		                console.error("Error: " + this.status + " - " + this.statusText);
-		            }
-		        }
-		    };
+                // Set background color based on name
+                const bgColor = generateColor(message.name);
+                messageDiv.style.backgroundColor = bgColor;
 
-		    xhr.onerror = function () {
-		        console.error("Request failed");
-		    };
+                messageDiv.appendChild(nameDiv);
+                messageDiv.appendChild(textDiv);
+                chatMessages.appendChild(messageDiv);
+            });
 
-		    xhr.send();
-		}
+            // Scroll to the bottom of the chat messages
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
 
-		
-	</script>
+        // Function to send a message
+        function sendMessage() {
+            const msgInput = document.getElementById("chat-input");
+            const msg = msgInput.value.trim();
+
+            if (!msg) {
+                console.error("Message is empty");
+                return;
+            }
+
+            const xhr = new XMLHttpRequest();
+            const url = `http://localhost:8081/app/v1/chatapp/send-msg?message=${encodeURIComponent(msg)}`;
+
+            xhr.open("GET", url, true);
+
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState === 4) {
+                    if (xhr.status === 200) {
+                        try {
+                            const response = JSON.parse(xhr.responseText);
+                            renderMessages(response.message);
+                            msgInput.value = ""; // Clear input field
+                        } catch (error) {
+                            console.error("Error parsing JSON response:", error);
+                        }
+                    } else {
+                        console.error(`Error: ${xhr.status} - ${xhr.statusText}`);
+                    }
+                }
+            };
+
+            xhr.onerror = function () {
+                console.error("Request failed");
+            };
+
+            xhr.send();
+        }
+    </script>
 </head>
 <body>
 <div class="chat-container">
@@ -156,19 +193,12 @@
     </div>
 
     <div class="chat-messages">
-        <div class="chat-message user" th:each="message : ${userMessages}">
-            <div class="chat-name" th:text="${userName}"></div>
-            <div th:text="${message}"></div>
-        </div>
-        <div class="chat-message friend" th:each="message : ${friendMessages}">
-            <div class="chat-name" th:text="${friendName}"></div>
-            <div th:text="${message}"></div>
-        </div>
+        <!-- Messages will be dynamically rendered here -->
     </div>
 
-	<div class="chat-input-container">
-	    <input type="text" id="chat-input" class="chat-input" placeholder="Type a message..." />
-	    <button class="send-button" type="button" onclick="sendMessage()">Send</button>
+    <div class="chat-input-container">
+        <input type="text" id="chat-input" class="chat-input" placeholder="Type a message..." />
+        <button class="send-button" type="button" onclick="sendMessage()">Send</button>
     </div>
 </div>
 </body>
