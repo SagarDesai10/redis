@@ -7,6 +7,7 @@ public class Receiver {
 	private AtomicInteger counter =new AtomicInteger();
 	
 	public void receiveMessage(String message) {
+		System.out.println(message);
         counter.incrementAndGet();
     }
 

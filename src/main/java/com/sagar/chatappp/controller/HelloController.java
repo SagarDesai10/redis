@@ -5,6 +5,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.ui.Model;
@@ -23,6 +25,10 @@ import com.sagar.chatappp.dto.MsgResponseDTO;
 @RequestMapping("/app/v1/chatapp")
 public class HelloController {
 	
+	@Autowired
+	private StringRedisTemplate redisTemplate;
+	
+	
 	@GetMapping(value="/hello")
 	public ModelAndView hello(ModelMap model)
 	{
@@ -39,6 +45,8 @@ public class HelloController {
 		MessageDTO msg2=new MessageDTO("romil","hi sagar","friend");
 		
 		MsgResponseDTO msg=new MsgResponseDTO(Arrays.asList(msg1,msg2));
+		
+		redisTemplate.convertAndSend("chat", message);
 		
 	    return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(msg);
 	}
